@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Container, Row, Col, Form, Button, Card, Alert, InputGroup } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ const LoginPage = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const {login} = useAuth()
   
   const navigate = useNavigate();
 
@@ -35,18 +37,29 @@ const LoginPage = () => {
     }
     
     setIsLoading(true);
-    
-    setTimeout(() => {
-      // check for a dummy email and password
-      if (formData.email === 'user@example.com' && formData.password === 'password') {
-        // Authentication successful - redirect to chat page
-        navigate('/');
-      } else {
-        // Authentication failed
-        setErrorMessage('Invalid email or password. Please try again.');
+
+    // fetch('http://10.0.0.201:5050/login',{
+    //   method:"POST",
+    //   headers:{
+    //     'Content-Type':'application/json'
+    //   },
+    //   credentials: 'include',
+    //   body: JSON.stringify(formData)
+    // }).then(resp =>{
+    //   if(resp.ok){
+    //     navigate('/')
+    //   }else{
+    //     setErrorMessage('Invalid email or password. Please try again.');
+    //   }
+    //   setIsLoading(false);
+    // })
+    login(formData.email,formData.password,(message)=>{
+      if(message){
+        navigate('/')
       }
-      setIsLoading(false);
-    }, 1000);
+      setIsLoading(false)
+    })
+    
   };
 
   const togglePasswordVisibility = () => {

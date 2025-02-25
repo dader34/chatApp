@@ -9,9 +9,6 @@ from setup import (
     set_access_cookies,
     set_refresh_cookies,
     resend,
-    check_not_none,
-    BYPASS_2FA,
-    PROD,
     load_dotenv,
 )
 from models.User import User
@@ -21,8 +18,8 @@ from models.AuthCode import AuthCode
 class Login(Resource):
 
     def post(self):
-        # Retrieve username and password from the request
-        username = request.json.get("username")
+        # Retrieve email and password from the request
+        email = request.json.get("email")
         password = request.json.get("password")
 
         _2fa_code = request.json.get("2fa_code")
@@ -31,7 +28,7 @@ class Login(Resource):
 
         load_dotenv()
 
-        if check_not_none(_2fa_code):
+        if (_2fa_code is not None):
             if auth_code := db.session.get(AuthCode, _2fa_code):
 
                 if not (auth_code.is_expired):
@@ -51,21 +48,11 @@ class Login(Resource):
 
                     # Create response with user details and set cookies
                     response = make_response(
-                        auth_code.user.to_dict(only=("id", "username", "role")), 200
+                        auth_code.user.to_dict(only=("id", "email", "role")), 200
                     )
                     set_access_cookies(response, access_token)
                     set_refresh_cookies(response, refresh_token)
-
-                    try:
-
-                        activity = Activity(user_id=AuthCode.user.id, action="Logged in")
-                        db.session.add(activity)
-                        db.session.commit()
-
-                    except Exception as e:
-
-                        return {"error": str(e)}, 400
-
+                    
                     return response
                 else:
                     return {"error": "Your auth code has expired"}, 400
@@ -73,20 +60,20 @@ class Login(Resource):
             else:
                 return {"error": "Invalid 2fa code"}, 400
 
-        # Validate username and password length
-        if not (5 <= len(username) <= 25 or 5 <= len(password) <= 25):
+        # Validate email and password length
+        if not (5 <= len(email) <= 25 or 5 <= len(password) <= 25):
             return {
-                "error": "Username and password must be between 5 and 25 characters"
+                "error": "email and password must be between 5 and 25 characters"
             }, 400
 
         # Check if the user exists
         if user := User.query.filter(
-            db.func.lower(User.username) == db.func.lower(username)
+            db.func.lower(User.email) == db.func.lower(email)
         ).first():
             # Authenticate user
             if user.authenticate(password):
 
-                if BYPASS_2FA and not PROD:
+                if 1 and not 0:
                     # Create access and refresh tokens
                     access_token = create_access_token(
                         identity=user.id,
@@ -100,7 +87,7 @@ class Login(Resource):
 
                     # Create response with user details and set cookies
                     response = make_response(
-                        user.to_dict(only=("id", "username", "role")), 200
+                        user.to_dict(only=("id", "email", "role")), 200
                     )
                     set_access_cookies(response, access_token)
                     set_refresh_cookies(response, refresh_token)
@@ -123,9 +110,9 @@ class Login(Resource):
                         db.session.commit()
 
                         params: resend.Emails.SendParams = {
-                            "from": "Admin <Administrator@clockwisecpa.app>",
+                            "from": "Admin <Administrator@chatapp.dev>",
                             "to": [user.email],
-                            "subject": "Clockwise 2FA Code",
+                            "subject": "Chat App 2FA Code",
                             "html": f"<strong>Your 2FA code is: {new_2fa_code.id}</strong>",
                         }
 

@@ -28,9 +28,9 @@ RESEND_API_KEY=os.environ.get('RESEND_API_KEY')
 # Configure Flask app
 app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///test.db'
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
-app.config['JWT_COOKIE_SAMESITE'] = 'None'
+app.config['JWT_COOKIE_SAMESITE'] = 'Lax'
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_pre_ping': True}
-app.config['JWT_COOKIE_SECURE'] = True
+# app.config['JWT_COOKIE_SECURE'] = True
 app.config['PROPAGATE_EXCEPTIONS'] = True
 app.config['JWT_SECRET_KEY'] = os.environ.get("KEY")
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=1)

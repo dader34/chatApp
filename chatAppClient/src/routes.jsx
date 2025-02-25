@@ -13,6 +13,10 @@ const routes = [
                 path: '/',
                 element: <ChatHome />
             },
+            {
+                path: '/error',
+                element: <ErrorPage/>
+            }
             
         ]
     },
