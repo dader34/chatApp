@@ -1,0 +1,10 @@
+.pyc
+__pycache__
+# .cache/
+node_modules/
+chatAppServer/instance
+chatAppServer/migrations
+chatAppServer/__pycache__
+.db
+.DS_Store
+.venv
