@@ -8,4 +8,4 @@ chatAppServer/__pycache__
 .db
 .DS_Store
 .venv
-.env
+chatAppServer/.env
