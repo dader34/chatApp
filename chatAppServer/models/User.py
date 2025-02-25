@@ -9,7 +9,7 @@ class User(db.Model, SerializerMixin):
 
     id = db.Column(db.String, default=lambda: generate_unique_uuid(User), primary_key=True)
     username = db.Column(db.String, nullable=False, unique=True)
-    role = db.Column(db.String, nullable=False)
+    role = db.Column(db.String, default='user', nullable=False)
     password_hash = db.Column(db.String, nullable=False)
     created_at = db.Column(db.String, default=current_time, nullable=False)
     email = db.Column(db.String)

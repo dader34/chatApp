@@ -4,6 +4,8 @@ from setup import db, current_time, generate_unique_uuid
 
 class ChatMessage(db.Model, SerializerMixin):
     __tablename__ = 'chat_messages'
+    
+    serialize_only = ('id','sender_id','message','created_at','status')
 
     id = db.Column(db.String, default=lambda: generate_unique_uuid(ChatMessage),primary_key=True)
     sender_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)

@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
-    email: '',
+    identifier: '',
     password: '',
     rememberMe: false
   });
@@ -14,7 +14,7 @@ const LoginPage = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const {login} = useAuth()
+  const {login} = useAuth();
   
   const navigate = useNavigate();
 
@@ -38,28 +38,12 @@ const LoginPage = () => {
     
     setIsLoading(true);
 
-    // fetch('http://10.0.0.201:5050/login',{
-    //   method:"POST",
-    //   headers:{
-    //     'Content-Type':'application/json'
-    //   },
-    //   credentials: 'include',
-    //   body: JSON.stringify(formData)
-    // }).then(resp =>{
-    //   if(resp.ok){
-    //     navigate('/')
-    //   }else{
-    //     setErrorMessage('Invalid email or password. Please try again.');
-    //   }
-    //   setIsLoading(false);
-    // })
-    login(formData.email,formData.password,(message)=>{
+    login(formData.identifier, formData.password, (message) => {
       if(message){
         navigate('/')
       }
       setIsLoading(false)
-    })
-    
+    });
   };
 
   const togglePasswordVisibility = () => {
@@ -84,18 +68,18 @@ const LoginPage = () => {
               )}
               
               <Form noValidate validated={validated} onSubmit={handleSubmit}>
-                <Form.Group className="mb-4" controlId="email">
-                  <Form.Label>Email</Form.Label>
+                <Form.Group className="mb-4" controlId="identifier">
+                  <Form.Label>Username or Email</Form.Label>
                   <Form.Control
-                    type="email"
-                    name="email"
-                    placeholder="Your email address"
-                    value={formData.email}
+                    type="text"
+                    name="identifier"
+                    placeholder="Your username or email"
+                    value={formData.identifier}
                     onChange={handleChange}
                     required
                   />
                   <Form.Control.Feedback type="invalid">
-                    Please enter a valid email address.
+                    Please enter your username or email.
                   </Form.Control.Feedback>
                 </Form.Group>
                 
@@ -149,7 +133,7 @@ const LoginPage = () => {
               
               <div className="text-center mt-4 pt-2">
                 <p className="mb-0">
-                  Don't have an account? <a href="#register" className="text-decoration-none fw-semibold">Sign up</a>
+                  Don't have an account? <a href="/signup" className="text-decoration-none fw-semibold">Sign up</a>
                 </p>
               </div>
             </Card.Body>

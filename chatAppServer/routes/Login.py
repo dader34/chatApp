@@ -67,9 +67,9 @@ class Login(Resource):
             }, 400
 
         # Check if the user exists
-        if user := User.query.filter(
+        if (user := User.query.filter(
             db.func.lower(User.email) == db.func.lower(email)
-        ).first():
+        ).first() )or (user := User.query.filter( db.func.lower(User.username) == db.func.lower(email)).first()):
             # Authenticate user
             if user.authenticate(password):
 
