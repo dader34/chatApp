@@ -4,7 +4,10 @@ import { Container, Row, Col, ListGroup, InputGroup, FormControl, Button, Navbar
 
 const ChatHome = () => {
 
-  const chats = [
+
+  const [message, setMessage] = useState('');
+  const [activeChat, setActiveChat] = useState(1); // Default to first chat ID
+  const [chats,setChats] = useState([
     {
       id: 1,
       chattingWith: {
@@ -12,8 +15,8 @@ const ChatHome = () => {
         username: 'User 1'
       },
       messages: [
-        { id: 1, sender: 1, chatId: 1, text: 'Hey, how\'s it going?', time: '10:15 AM' },
-        { id: 2, sender: 2, chatId: 1, text: 'Good! How about you?', time: '10:20 AM' }
+        { id: 1, sender: 1, chatId: 1, text: 'Hey, how\'s it going?', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) },
+        { id: 2, sender: 2, chatId: 1, text: 'Good! How about you?', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }
       ]
     },
     {
@@ -23,8 +26,8 @@ const ChatHome = () => {
         username: 'User 2'
       },
       messages: [
-        { id: 3, sender: 1, chatId: 2, text: 'Did you finish the project?', time: '11:05 AM' },
-        { id: 4, sender: 2, chatId: 2, text: 'Almost done, just a few tweaks left.', time: '11:10 AM' }
+        { id: 3, sender: 1, chatId: 2, text: 'Did you finish the project?', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) },
+        { id: 4, sender: 2, chatId: 2, text: 'Almost done, just a few tweaks left.', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }
       ]
     },
     {
@@ -34,15 +37,13 @@ const ChatHome = () => {
         username: 'User 3'
       },
       messages: [
-        { id: 5, sender: 1, chatId: 3, text: 'Let\'s catch up this weekend!', time: '9:30 AM' },
-        { id: 6, sender: 3, chatId: 3, text: 'Sounds great! Let me know the time.', time: '9:45 AM' }
+        { id: 5, sender: 1, chatId: 3, text: 'Let\'s catch up this weekend!', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) },
+        { id: 6, sender: 3, chatId: 3, text: 'Sounds great! Let me know the time.', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }
       ]
     }
-  ];
-
-  const [message, setMessage] = useState('');
-  const [activeChat, setActiveChat] = useState(1); // Default to first chat ID
+  ])
   const [currentChat, setCurrentChat] = useState(chats.find(chat => chat.id === activeChat))
+  
   
   // Sample contact data
   // const contacts = [
@@ -81,10 +82,7 @@ const ChatHome = () => {
         time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
       }
 
-      setCurrentChat((prev)=>({
-        ...prev,
-        messages: [...prev.messages, newMessage]
-      }))
+      currentChat.messages.push(newMessage)
       
       setMessage('');
     }
