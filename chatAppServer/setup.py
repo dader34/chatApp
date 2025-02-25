@@ -22,6 +22,8 @@ load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
 
+RESEND_API_KEY=os.environ.get('RESEND_API_KEY')
+
 # Set JWT secret key and token expiration settings
 # Configure Flask app
 app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///test.db'
@@ -44,6 +46,8 @@ convention = {
   "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
   "pk": "pk_%(table_name)s"
 }
+
+resend.api_key = RESEND_API_KEY
 
 
 metadata = MetaData(naming_convention=convention)
