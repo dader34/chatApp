@@ -1,6 +1,7 @@
 import ChatApp from "./App"
 import ChatHome from "./pages/ChatHome"
 import ErrorPage from "./pages/ErrorPage"
+import LoginPage from "./pages/LoginPage"
 
 const routes = [
     {
@@ -12,7 +13,12 @@ const routes = [
                 path: '/',
                 element: <ChatHome />
             },
+            
         ]
+    },
+    {
+        path: '/login',
+        element: <LoginPage/>
     }
 ]
 
