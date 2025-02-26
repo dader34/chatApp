@@ -7,5 +7,5 @@ class GetUser(Resource):
     @check_user_exists
     def get(self,user):
         return user.to_dict(
-            only=("id", "username", "role")
+            only=("id", "username", "role", 'chat_rooms.chat_room.id', 'chat_rooms.chat_room.participants.user.id', 'chat_rooms.chat_room.participants.user.username')
         ), 200

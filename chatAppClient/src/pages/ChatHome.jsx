@@ -1,45 +1,56 @@
 import { useEffect, useState } from 'react';
 import { Container, Row, Col, ListGroup, InputGroup, FormControl, Button, Navbar, Nav, 
          Modal, Tabs, Tab, Badge, Alert, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { useAuth } from '../context/AuthContext';
 
 const ChatHome = () => {
+  const {user, APP_URL} = useAuth()
+
   const [message, setMessage] = useState('');
-  const [activeChat, setActiveChat] = useState(1); // Default to first chat ID
-  const [chats, setChats] = useState([
-    {
-      id: 1,
-      chattingWith: {
-        id: 1,
-        username: 'User 1'
-      },
-      messages: [
-        { id: 1, sender: 1, chatId: 1, text: 'Hey, how\'s it going?', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) },
-        { id: 2, sender: 2, chatId: 1, text: 'Good! How about you?', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }
-      ]
-    },
-    {
-      id: 2,
-      chattingWith: {
-        id: 2,
-        username: 'User 2'
-      },
-      messages: [
-        { id: 3, sender: 1, chatId: 2, text: 'Did you finish the project?', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) },
-        { id: 4, sender: 2, chatId: 2, text: 'Almost done, just a few tweaks left.', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }
-      ]
-    },
-    {
-      id: 3,
-      chattingWith: {
-        id: 3,
-        username: 'User 3'
-      },
-      messages: [
-        { id: 5, sender: 1, chatId: 3, text: 'Let\'s catch up this weekend!', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) },
-        { id: 6, sender: 3, chatId: 3, text: 'Sounds great! Let me know the time.', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }
-      ]
+  const [chats, setChats] = useState([]);
+  const [activeChat, setActiveChat] = useState(0); // Default to first chat ID
+
+  useEffect(()=>{
+    if(user.chat_rooms){
+      setChats(user.chat_rooms)
     }
-  ]);
+  },[user])
+
+  // [
+  //   {
+  //     id: 1,
+  //     chattingWith: {
+  //       id: 1,
+  //       username: 'User 1'
+  //     },
+  //     messages: [
+  //       { id: 1, sender: 1, chatId: 1, text: 'Hey, how\'s it going?', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) },
+  //       { id: 2, sender: 2, chatId: 1, text: 'Good! How about you?', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }
+  //     ]
+  //   },
+  //   {
+  //     id: 2,
+  //     chattingWith: {
+  //       id: 2,
+  //       username: 'User 2'
+  //     },
+  //     messages: [
+  //       { id: 3, sender: 1, chatId: 2, text: 'Did you finish the project?', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) },
+  //       { id: 4, sender: 2, chatId: 2, text: 'Almost done, just a few tweaks left.', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }
+  //     ]
+  //   },
+  //   {
+  //     id: 3,
+  //     chattingWith: {
+  //       id: 3,
+  //       username: 'User 3'
+  //     },
+  //     messages: [
+  //       { id: 5, sender: 1, chatId: 3, text: 'Let\'s catch up this weekend!', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) },
+  //       { id: 6, sender: 3, chatId: 3, text: 'Sounds great! Let me know the time.', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }
+  //     ]
+  //   }
+  // ]
   
   // Friend Management States
   const [showFriendsModal, setShowFriendsModal] = useState(false);
@@ -64,20 +75,28 @@ const ChatHome = () => {
   ]);
   
   const [currentChat, setCurrentChat] = useState(chats.find(chat => chat.id === activeChat));
-  
+
   useEffect(() => {
+    fetch(`${APP_URL}/chats/${activeChat}`,{
+      credentials: 'include'
+    }).then(resp =>{
+      if(resp.ok){
+        resp.json().then(console.log)
+      }
+    })
     setCurrentChat(chats.find(chat => chat.id === activeChat));
   }, [activeChat, chats]);
+
   
   // Get the name and avatar for the current chat
-  const getContactInfo = (userId) => {
-    return {
-      name: `User ${userId}`,
-      avatar: ['👩', '👨', '👥'][userId - 1] || '🧑'
-    };
-  };
+  // const getContactInfo = (userId) => {
+  //   return {
+  //     name: `User ${userId}`,
+  //     avatar: ['👩', '👨', '👥'][userId - 1] || '🧑'
+  //   };
+  // };
   
-  const currentContact = currentChat ? getContactInfo(currentChat.chattingWith.id) : { name: '', avatar: '🧑' };
+  // const currentContact = currentChat ? getContactInfo(currentChat.chattingWith.id) : { name: '', avatar: '🧑' };
   
   const handleSendMessage = () => {
     if (message.trim()) {
@@ -268,7 +287,7 @@ const ChatHome = () => {
           </div>
           <ListGroup variant="flush">
             {chats.map((chat) => {
-              const contact = getContactInfo(chat.chattingWith.id);
+              const contact = chat.chat_room.participants.filter(u => u.user.id !== user?.id);
               const lastMessage = chat.messages[chat.messages.length - 1];
               
               return (
@@ -281,7 +300,7 @@ const ChatHome = () => {
                 >
                   <div className="d-flex align-items-center">
                     <div className="me-3 position-relative">
-                      <span style={{ fontSize: '1.5rem' }}>{contact.avatar}</span>
+                      <span style={{ fontSize: '1.5rem' }}>👨</span>
                       <span className="position-absolute bottom-0 end-0 bg-success rounded-circle" style={{ width: '10px', height: '10px' }}></span>
                     </div>
                     <div>
@@ -307,8 +326,8 @@ const ChatHome = () => {
               {/* Chat header */}
               <div className="border-bottom p-3 d-flex justify-content-between align-items-center bg-light">
                 <div className="d-flex align-items-center">
-                  <span style={{ fontSize: '1.5rem' }} className="me-2">{currentContact.avatar}</span>
-                  <h5 className="mb-0">{currentContact.name}</h5>
+                  {/* <span style={{ fontSize: '1.5rem' }} className="me-2">{currentContact.avatar}</span> */}
+                  {/* <h5 className="mb-0">{currentContact.name}</h5> */}
                 </div>
                 <div>
                   {/* Chat options could go here */}
@@ -326,7 +345,7 @@ const ChatHome = () => {
                     >
                       {!isMine && (
                         <div className="me-2">
-                          <span style={{ fontSize: '1.5rem' }}>{currentContact.avatar}</span>
+                          {/* <span style={{ fontSize: '1.5rem' }}>{currentContact.avatar}</span> */}
                         </div>
                       )}
                       <div 
