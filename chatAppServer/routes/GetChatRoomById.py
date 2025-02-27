@@ -12,6 +12,6 @@ class GetChaRoomtById(Resource):
         print(user.chat_rooms[0].chat_room.id)
         if chat := db.session.get(ChatRoom, id):
             
-            return chat.to_dict(only=('messages','participants.id'))
+            return chat.to_dict(only=('id','messages','participants.user.id','participants.user.username'))
         else:
             return {'error':'Chat room not found'}, 404

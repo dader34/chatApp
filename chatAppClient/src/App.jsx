@@ -18,7 +18,7 @@ const ChatApp = () => {
         }
       });
     }
-  }, []); // eslint-disable-line
+  }, [location.pathname]); // eslint-disable-line
   
   return( user ?
     <Outlet/> : null

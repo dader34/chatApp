@@ -97,6 +97,36 @@ class User(db.Model, SerializerMixin):
         db.session.commit()
         return True, friendship
     
+    def join_room(self, chat_room, role='member'):
+        from models.ChatRoomUser import ChatRoomUser
+        
+        # Handle either a ChatRoom instance or chat_room_id
+        chat_room_id = chat_room.id if hasattr(chat_room, 'id') else chat_room
+        
+        # Check if user is already in the room
+        existing = ChatRoomUser.query.filter_by(
+            user_id=self.id,
+            chat_room_id=chat_room_id
+        ).first()
+        
+        if existing:
+            return False, "User is already a participant in this chat room"
+        
+
+        chat_room_user = ChatRoomUser(
+            user_id=self.id,
+            chat_room_id=chat_room_id,
+            role=role
+        )
+        
+        try:
+            db.session.add(chat_room_user)
+            db.session.commit()
+            return True, chat_room_user
+        except Exception as e:
+            db.session.rollback()
+            return False, f"Error joining chat room: {str(e)}"
+    
     @property
     def friends(self):
         """Return all accepted friends"""

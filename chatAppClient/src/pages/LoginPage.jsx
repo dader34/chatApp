@@ -42,8 +42,8 @@ const LoginPage = () => {
       if(message){
         navigate('/')
       }
-      setIsLoading(false)
     });
+    setIsLoading(false)
   };
 
   const togglePasswordVisibility = () => {

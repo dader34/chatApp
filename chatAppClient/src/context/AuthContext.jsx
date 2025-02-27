@@ -11,6 +11,19 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const { error  } = useNotify();
 
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '';
+        
+
+        // Parse the date to ensure it is treated as a local date
+        const [year, month, day] = dateStr.split(' ')[0].split('-').map(Number);
+        const date = new Date(year, month - 1, day); // Month is 0-based in JavaScript
+        let options = { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+
+        return date.toLocaleDateString(undefined, options);
+    };
+
+
     // Function to get a specific cookie value by name
     const getCookie = (name) => {
         const value = `; ${document.cookie}`;
@@ -142,7 +155,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{user, login, logout, refreshUser, getCookie, APP_URL, DEV, handle2FASubmit}}>
+        <AuthContext.Provider value={{user, login, logout, refreshUser, getCookie, APP_URL, DEV, handle2FASubmit, formatDate}}>
             {children}
         </AuthContext.Provider>
     );

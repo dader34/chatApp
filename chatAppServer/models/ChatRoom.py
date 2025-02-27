@@ -1,6 +1,8 @@
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
 from setup import db, current_time, generate_unique_uuid
+from sqlalchemy.ext.hybrid import hybrid_property
+
 
 class ChatRoom(db.Model, SerializerMixin):
     __tablename__ = 'chat_rooms'
@@ -11,3 +13,8 @@ class ChatRoom(db.Model, SerializerMixin):
 
     messages = relationship('ChatMessage', back_populates='chat_room', cascade="all, delete-orphan")
     participants = relationship('ChatRoomUser', back_populates='chat_room', cascade="all, delete-orphan")
+    
+    
+    @hybrid_property
+    def last_message(self):
+        return self.messages[-1] if len(self.messages) > 0 else ''
