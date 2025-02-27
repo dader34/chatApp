@@ -14,6 +14,7 @@ import uuid
 import pytz
 import os
 from functools import wraps
+from flask_socketio import SocketIO, join_room, leave_room, send
 
 
 # Load environment variables from .env file
@@ -38,6 +39,10 @@ app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
 
 # Enable Cross-Origin Resource Sharing (CORS) for the app
 cors = CORS(app, supports_credentials=True)
+
+# For websocket
+socketio = SocketIO(app, cors_allowed_origins="*")
+
 
 convention = {
   "ix": "ix_%(column_0_label)s",

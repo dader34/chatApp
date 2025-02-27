@@ -5,6 +5,9 @@ import {
 } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import { useNotify } from '../context/NotificationContext';
+import { socket } from '../misc/Socket';
+
+
 
 const ChatHome = () => {
   const { user, APP_URL, formatDate, getCookie } = useAuth()
@@ -18,6 +21,8 @@ const ChatHome = () => {
   const [friendUsername, setFriendUsername] = useState('');
   const [friendRequestStatus, setFriendRequestStatus] = useState({ show: false, type: '', message: '' });
   const [activeTab, setActiveTab] = useState('friends');
+  
+  const [isConnected, setIsConnected] = useState(socket.connected);
 
   // Sample friends data - in a real app, these would be fetched from API
   const [friends, setFriends] = useState([
@@ -36,6 +41,8 @@ const ChatHome = () => {
   ]);
 
   const [currentChat, setCurrentChat] = useState(chats.find(chat => chat.id === activeChat));
+
+  
 
   useEffect(()=>{
     fetch(`${APP_URL}/user/chats`,{
@@ -65,6 +72,51 @@ const ChatHome = () => {
     }
   }, [activeChat, chats]);
 
+  useEffect(() => {
+    if (currentChat && currentChat.id) {
+      // Clean up previous listeners
+      socket.off('joined_room');
+      socket.off('new_message');
+      
+      // Join the current room
+      socket.emit('join', {
+        username: user?.username,
+        room: currentChat.id
+      });
+  
+      // Set up event listeners for this specific room
+      socket.on('joined_room', (data) => {
+        console.log('Joined room:', data);
+      });
+  
+      socket.on('new_message', (message) => {
+        console.log('New message received:', message);
+        // Update your chat with the new message
+        if (message.room === currentChat.id) {
+          // Handle the message update logic here
+          fetch(`${APP_URL}/chats/${currentChat.id}`, {
+            credentials: 'include'
+          }).then(resp => {
+            if (resp.ok) {
+              resp.json().then(setCurrentChat);
+            }
+          });
+        }
+      });
+      
+      // Clean up function
+      return () => {
+        socket.emit('leave', {
+          username: user?.username,
+          room: currentChat.id
+        });
+        socket.off('joined_room');
+        socket.off('new_message');
+      };
+    }
+  }, [currentChat?.id, user?.username]);
+
+
 
 
   // Get the name and avatar for the current chat
@@ -90,22 +142,26 @@ const ChatHome = () => {
         body: JSON.stringify({'message':message, 'chat_id':currentChat.id})
       }).then(resp =>{
         if(resp.ok){
-          resp.json().then(console.log)
+          // resp.json().then(console.log)
+          socket.emit('send_message',{
+            room: currentChat?.id,
+            message: message
+          })
         }else{
           error(resp)
         }
       })
 
-      const updatedChat = {
-        ...currentChat,
-        messages: [...currentChat.messages, newMessage]
-      };
+      // const updatedChat = {
+      //   ...currentChat,
+      //   messages: [...currentChat.messages, newMessage]
+      // };
 
-      setChats(chats.map(chat =>
-        chat.id === currentChat.id ? updatedChat : chat
-      ));
+      // setChats(chats.map(chat =>
+      //   chat.id === currentChat.id ? updatedChat : chat
+      // ));
 
-      setCurrentChat(updatedChat);
+      // setCurrentChat(updatedChat);
       setMessage('');
     }
   };
@@ -119,7 +175,6 @@ const ChatHome = () => {
   // Function to determine if a message is from the current user
   const isMyMessage = (senderId) => {
     // current user has id of 2 for testing rn
-    console.log(senderId)
     return senderId === user?.id;
   };
 
@@ -227,11 +282,6 @@ const ChatHome = () => {
 
     setShowFriendsModal(false);
   };
-
-  useEffect(()=>{
-    if(currentChat && currentChat.participants) console.log(currentChat.participants.filter(u => u.user.id !== user.id))
-    
-  },[currentChat])
 
   return (
     <Container fluid className="p-0 vh-100 d-flex flex-column">
