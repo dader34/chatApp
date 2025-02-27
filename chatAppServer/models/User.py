@@ -97,6 +97,47 @@ class User(db.Model, SerializerMixin):
         db.session.commit()
         return True, friendship
     
+    def send_message(self, chat_room, message_text):
+        from models.ChatMessage import ChatMessage
+        from models.ChatRoomUser import ChatRoomUser
+        
+        # Handle either a ChatRoom instance or chat_room_id
+        chat_room_id = chat_room.id if hasattr(chat_room, 'id') else chat_room
+        
+        # Check if message text is valid
+        if not message_text or not message_text.strip():
+            return False, "Message cannot be empty"
+        
+        # Check if user is a participant in the chat room
+        is_participant = ChatRoomUser.query.filter_by(
+            user_id=self.id,
+            chat_room_id=chat_room_id
+        ).first()
+        
+        if not is_participant:
+            return False, "You are not a participant in this chat room"
+        
+        # Create the new message
+        try:
+            new_message = ChatMessage(
+                sender_id=self.id,
+                chat_room_id=chat_room_id,
+                message=message_text,
+                created_at=current_time(),
+                status='Sent'
+            )
+            
+            db.session.add(new_message)
+            db.session.commit()
+            return new_message
+            
+        except ValueError as ve:
+            db.session.rollback()
+            return False, str(ve)
+        except Exception as e:
+            db.session.rollback()
+            return False, f"Error sending message: {str(e)}"
+    
     def join_room(self, chat_room, role='member'):
         from models.ChatRoomUser import ChatRoomUser
         

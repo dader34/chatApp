@@ -4,9 +4,11 @@ import {
   Modal, Tabs, Tab, Badge, Alert, OverlayTrigger, Tooltip
 } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
+import { useNotify } from '../context/NotificationContext';
 
 const ChatHome = () => {
-  const { user, APP_URL, formatDate } = useAuth()
+  const { user, APP_URL, formatDate, getCookie } = useAuth()
+  const {error} = useNotify()
 
   const [message, setMessage] = useState('');
   const [chats, setChats] = useState([]);
@@ -35,6 +37,21 @@ const ChatHome = () => {
 
   const [currentChat, setCurrentChat] = useState(chats.find(chat => chat.id === activeChat));
 
+  useEffect(()=>{
+    fetch(`${APP_URL}/user/chats`,{
+      credentials: 'include'
+    }).then(resp =>{
+      if(resp.ok){
+        resp.json().then(data =>{
+          setChats(data)
+          setActiveChat(data[0].id)
+        })
+      }else{
+        console.error(resp)
+      }
+    })
+  }, [])
+
   useEffect(() => {
     if (activeChat) {
       fetch(`${APP_URL}/chats/${activeChat}`, {
@@ -47,21 +64,6 @@ const ChatHome = () => {
       setCurrentChat(chats.find(chat => chat.id === activeChat));
     }
   }, [activeChat, chats]);
-
-  useEffect(()=>{
-    fetch(`${APP_URL}/user/chats`,{
-      credentials: 'include'
-    }).then(resp =>{
-      if(resp.ok){
-        resp.json().then(data =>{
-          setChats(data)
-          setActiveChat(data[0].id)
-        })
-      }else{
-        alert(3412424)
-      }
-    })
-  }, [])
 
 
 
@@ -77,14 +79,22 @@ const ChatHome = () => {
 
   const handleSendMessage = () => {
     if (message.trim()) {
-      // In a real app, you would add the message to state and send to a backend
-      const newMessage = {
-        id: Math.max(...currentChat.messages.map(m => m.id)) + 1,
-        sender: 2, // Assuming current user is sender 2
-        chatId: currentChat.id,
-        text: message,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
+
+      fetch(`${APP_URL}/messages/send`,{
+        method: 'POST',
+        credentials: 'include',
+        headers:{
+          "Content-Type":'application/json',
+          'X-CSRF-TOKEN':getCookie('csrf_access_token')
+        },
+        body: JSON.stringify({'message':message, 'chat_id':currentChat.id})
+      }).then(resp =>{
+        if(resp.ok){
+          resp.json().then(console.log)
+        }else{
+          error(resp)
+        }
+      })
 
       const updatedChat = {
         ...currentChat,
@@ -109,7 +119,8 @@ const ChatHome = () => {
   // Function to determine if a message is from the current user
   const isMyMessage = (senderId) => {
     // current user has id of 2 for testing rn
-    return senderId === 2;
+    console.log(senderId)
+    return senderId === user?.id;
   };
 
   // Friend request handlers
@@ -314,7 +325,7 @@ const ChatHome = () => {
               <div className="flex-grow-1 p-3 overflow-auto bg-light" style={{ maxHeight: 'calc(100vh - 170px)' }}>
                 {currentChat.messages && currentChat.messages.length > 0 ? (
                   currentChat.messages.map((msg) => {
-                    const isMine = isMyMessage(msg.sender);
+                    const isMine = isMyMessage(msg.sender_id);
                     return (
                       <div
                         key={msg.id}
