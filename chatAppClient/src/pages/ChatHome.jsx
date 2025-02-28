@@ -77,6 +77,7 @@ const ChatHome = () => {
       // Clean up previous listeners
       socket.off('joined_room');
       socket.off('new_message');
+      socket.off('error');
       
       // Join the current room
       socket.emit('join', {
@@ -87,6 +88,10 @@ const ChatHome = () => {
       // Set up event listeners for this specific room
       socket.on('joined_room', (data) => {
         console.log('Joined room:', data);
+      });
+
+      socket.on('error', (data) => {
+        console.log('Error:', data);
       });
   
       socket.on('new_message', (message) => {
@@ -132,24 +137,26 @@ const ChatHome = () => {
   const handleSendMessage = () => {
     if (message.trim()) {
 
-      fetch(`${APP_URL}/messages/send`,{
-        method: 'POST',
-        credentials: 'include',
-        headers:{
-          "Content-Type":'application/json',
-          'X-CSRF-TOKEN':getCookie('csrf_access_token')
-        },
-        body: JSON.stringify({'message':message, 'chat_id':currentChat.id})
-      }).then(resp =>{
-        if(resp.ok){
-          // resp.json().then(console.log)
-          socket.emit('send_message',{
-            room: currentChat?.id,
-            message: message
-          })
-        }else{
-          error(resp)
-        }
+      // fetch(`${APP_URL}/messages/send`,{
+      //   method: 'POST',
+      //   credentials: 'include',
+      //   headers:{
+      //     "Content-Type":'application/json',
+      //     'X-CSRF-TOKEN':getCookie('csrf_access_token')
+      //   },
+      //   body: JSON.stringify({'message':message, 'chat_id':currentChat.id})
+      // }).then(resp =>{
+      //   if(resp.ok){
+      //     // resp.json().then(console.log)
+          
+      //   }else{
+      //     error(resp)
+      //   }
+      // })
+
+      socket.emit('send_message',{
+        room: currentChat?.id,
+        message: message
       })
 
       // const updatedChat = {
@@ -325,7 +332,7 @@ const ChatHome = () => {
           <ListGroup variant="flush">
             {chats.map((chat) => {
               const contact = chat.participants.find(u => u.user.id !== user?.id);
-              const lastMessage = chat.last_message;
+              const lastMessage = chat.last_message || currentChat.messages[currentChat.messages.length-1].message;
 
               return (
                 <ListGroup.Item

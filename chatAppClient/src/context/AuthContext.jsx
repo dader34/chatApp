@@ -17,7 +17,9 @@ export const AuthProvider = ({ children }) => {
 
         // Parse the date to ensure it is treated as a local date
         const [year, month, day] = dateStr.split(' ')[0].split('-').map(Number);
-        const date = new Date(year, month - 1, day); // Month is 0-based in JavaScript
+        let [hour, minute, _] = dateStr.split(" ")[1].split(':')
+        console.log(hour, minute)
+        const date = new Date(year, month - 1, day, hour, minute); // Month is 0-based in JavaScript
         let options = { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' };
 
         return date.toLocaleDateString(undefined, options);

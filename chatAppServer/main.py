@@ -166,9 +166,9 @@ def handle_message(user, data):
             return
             
         # Send the message using the user's send_message method
-        success, result = user.send_message(room_id, message_text)
+        result = user.send_message(room_id, message_text)
         
-        if not success:
+        if not result:
             socketio.emit('error', {'message': result}, to=request.sid)
             return
             
